@@ -6,6 +6,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
+from sklearn.compose import ColumnTransformer
 from sklearn.metrics import RocCurveDisplay, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import OrdinalEncoder
@@ -16,14 +17,17 @@ from sklearn.neighbors import KNeighborsClassifier
 
 dataset = pd.read_csv('./data.csv')
 
-catagoricals = ['Gender', 
+categoricals = ['Gender', 
                 'CAEC', 
                 'CALC', 
-                'MTRANS', 
-                'NObeyesdad']
+                'MTRANS', ]
+#'NObeyesdad']
 
 X = dataset.drop('NObeyesdad', axis=1)
-Y = dataset['NObeyesdad']
+print(dataset['NOBeyesdad'])
+Y = OrdinalEncoder().fit_transform(dataset['NObeyesdad'])
+
+train_x, test_x, train_y, test_y = train_test_split(X, Y, test_size=0.2)
 
 print(X.describe())
 
@@ -34,8 +38,14 @@ models = [
         ('k-Nearest Neighbours', KNeighborsClassifier),
 ]
 
+encoding = ColumnTransformer(
+        [('categorical', OrdinalEncoder(), categoricals)],
+        remainder='passthrough',
+)
+
 preprocessing = [
-    [('Encode', OrdinalEncoder()), ('Normalise', StandardScaler()), ('Project', PCA()),],
+        [('Encode', encoding)],
+        #[('Encode', OrdinalEncoder()), ('Normalise', StandardScaler()), ('Project', PCA()),],
 ]
 
 pipelines = []
@@ -52,5 +62,7 @@ for name, klass in models:
 pipelines = map(lambda steps: Pipeline(steps), pipelines)
 
 for pipeline in pipelines:
-    pipeline.fit(X, Y)
+    pipeline.fit(train_x, train_y)
+
+    print(classification_report(test_y, pipeline.predict(test_x)))
 
