@@ -8,7 +8,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import RocCurveDisplay, ConfusionMatrixDisplay
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
@@ -20,8 +20,8 @@ from sklearn.feature_selection import VarianceThreshold, RFE
 dataset = pd.read_csv('./data.csv')
 OUTPUT_COLUMN = 'NObeyesdad'
 
-categoricals = ['Gender', 'CAEC', 'CALC', 'MTRANS', 'SMOKE', 'SCC',
-                'family_history_with_overweight', 'FAVC', ]
+categoricals = ['Gender', 'CAEC', 'CALC', 'MTRANS', 'SMOKE', 
+                'SCC', 'family_history_with_overweight', 'FAVC', ]
 
 numericals = ['Age', 'Height', 'Weight', 'FCVC', 
               'NCP', 'CH2O',  'FAF', 'TUE']
@@ -29,12 +29,12 @@ numericals = ['Age', 'Height', 'Weight', 'FCVC',
 X = dataset.drop(OUTPUT_COLUMN, axis=1)
 Y = pd.DataFrame(data=dataset[OUTPUT_COLUMN], columns=[OUTPUT_COLUMN])
 
-plt.subplots(4, 2)
-plt.subplot(4, 2, 1)
+plt.subplots(2, 2)
+plt.subplot(2, 2, 1)
 X.boxplot(['Age'])
-plt.subplot(4, 2, 2)
+plt.subplot(2, 2, 2)
 X.boxplot(['Height'])
-plt.subplot(4, 2, 3)
+plt.subplot(2, 2, 3)
 X.boxplot(['Weight'])
 
 plt.savefig('data.png')
@@ -98,11 +98,16 @@ SIZE = (4, 4)
 plt.subplots(*SIZE)
 plt.figure(figsize=(20.0, 20.0))
 
+scores = []
+
 for (i, (name, preprocessing_kind, pipeline)) in enumerate(pipelines):
     ax = plt.subplot(*SIZE, i + 1)
     ax.set_title(f'{name}\nwith {preprocessing_kind}')
 
     pipeline.fit(train_x, train_y)
+
+    score = cross_val_score(pipeline, test_x, test_y, n_jobs=1)
+    scores.append((name, preprocessing_kind, score))
 
     ConfusionMatrixDisplay.from_estimator(
             pipeline,
@@ -115,3 +120,15 @@ for (i, (name, preprocessing_kind, pipeline)) in enumerate(pipelines):
     print(name)
 
 plt.savefig('figure.png')
+
+L = 15
+
+print('=' * L + '***' + '=' * L)
+
+for n, k, s in scores:
+    print(f'{n} - {k}')
+    print(f'Scores: {s}\nMean: {s.mean()}, std: {s.std()}')
+
+    print('=' * L + '***' + '=' * L)
+
+
