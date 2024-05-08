@@ -6,17 +6,15 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import RocCurveDisplay, ConfusionMatrixDisplay
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
-plt.subplots(3, 3)
 
 dataset = pd.read_csv('./data.csv')
 OUTPUT_COLUMN = 'NObeyesdad'
@@ -40,17 +38,17 @@ numerical_pipeline = Pipeline([
 ])
 
 encoding = ColumnTransformer([
-            ('Categorical', categorical_pipeline, categoricals), 
-            ('Numerical', numerical_pipeline, numericals),
+    ('Categorical', categorical_pipeline, categoricals), 
+    ('Numerical', numerical_pipeline, numericals),
 ])
 
 train_x, test_x, train_y, test_y = train_test_split(X, Y, test_size=0.2)
 
 models = [
-        ('Naive Bayes', GaussianNB),
-        ('Multi-Layer Perceptron', MLPClassifier),
-        ('Decision Tree', DecisionTreeClassifier),
-        ('k-Nearest Neighbours', KNeighborsClassifier),
+    ('Naive Bayes', GaussianNB),
+    ('Decision Tree', DecisionTreeClassifier),
+    ('Multi-Layer Perceptron', MLPClassifier),
+    ('k-Nearest Neighbours', KNeighborsClassifier),
 ]
 
 preprocessing = [
@@ -60,6 +58,8 @@ preprocessing = [
             ('Project', PCA()), 
         ],
 ]
+
+preprocessing_kinds = ['PCA']
 
 pipelines = []
 
@@ -74,10 +74,24 @@ for name, klass in models:
 
 pipelines = map(lambda t: (t[0], Pipeline(t[1])), pipelines)
 
-for name, pipeline in pipelines:
-    print(name)
+SIZE = (3, 3)
+plt.subplots(*SIZE)
+plt.figure(figsize=(20.0, 20.0))
+
+for (i, (name, pipeline)) in enumerate(pipelines):
+    ax = plt.subplot(*SIZE, i + 1)
+    ax.set_title(f'{name} with {preprocessing_kinds[i // len(models)]}')
+
     pipeline.fit(train_x, train_y)
 
+    ConfusionMatrixDisplay.from_estimator(
+            pipeline,
+            test_x,
+            test_y,
+            normalize='true',
+            ax=ax,
+    )
 
-    print(classification_report(test_y, pipeline.predict(test_x)))
+    print(name)
 
+plt.savefig('figure.png')
