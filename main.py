@@ -8,13 +8,14 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import RocCurveDisplay, ConfusionMatrixDisplay
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
-
+from sklearn.feature_selection import VarianceThreshold, RFE
 
 dataset = pd.read_csv('./data.csv')
 OUTPUT_COLUMN = 'NObeyesdad'
@@ -27,6 +28,17 @@ numericals = ['Age', 'Height', 'Weight', 'FCVC',
 
 X = dataset.drop(OUTPUT_COLUMN, axis=1)
 Y = pd.DataFrame(data=dataset[OUTPUT_COLUMN], columns=[OUTPUT_COLUMN])
+
+plt.subplots(4, 2)
+plt.subplot(4, 2, 1)
+X.boxplot(['Age'])
+plt.subplot(4, 2, 2)
+X.boxplot(['Height'])
+plt.subplot(4, 2, 3)
+X.boxplot(['Weight'])
+
+plt.savefig('data.png')
+plt.cla()
 
 categorical_pipeline = Pipeline([
     ('Missing Values', SimpleImputer(strategy='most_frequent')),
@@ -57,30 +69,38 @@ preprocessing = [
             ('Normalise', StandardScaler()), 
             ('Project', PCA()), 
         ],
+        [
+            ('Initial', encoding),
+            ('filter', VarianceThreshold()),
+        ],
+        [
+            ('Initial', encoding),
+            ('wrap', RFE(RandomForestClassifier())),
+        ],
 ]
 
-preprocessing_kinds = ['PCA']
+preprocessing_kinds = ['PCA', 'Variance Threshold', 'RFE']
 
 pipelines = []
 
 for name, klass in models:
-    for pre_steps in preprocessing:
+    for i, pre_steps in enumerate(preprocessing):
         steps = [
             *pre_steps,
             (name, klass()),
         ]
 
-        pipelines.append((name, steps))
+        pipelines.append((name, steps, preprocessing_kinds[i]))
 
-pipelines = map(lambda t: (t[0], Pipeline(t[1])), pipelines)
+pipelines = map(lambda t: (t[0], t[2], Pipeline(t[1])), pipelines)
 
-SIZE = (3, 3)
+SIZE = (4, 4)
 plt.subplots(*SIZE)
 plt.figure(figsize=(20.0, 20.0))
 
-for (i, (name, pipeline)) in enumerate(pipelines):
+for (i, (name, preprocessing_kind, pipeline)) in enumerate(pipelines):
     ax = plt.subplot(*SIZE, i + 1)
-    ax.set_title(f'{name} with {preprocessing_kinds[i // len(models)]}')
+    ax.set_title(f'{name}\nwith {preprocessing_kind}')
 
     pipeline.fit(train_x, train_y)
 
