@@ -3,6 +3,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 
 from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
@@ -15,21 +16,35 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
+plt.subplots(3, 3)
+
 dataset = pd.read_csv('./data.csv')
+OUTPUT_COLUMN = 'NObeyesdad'
 
-categoricals = ['Gender', 
-                'CAEC', 
-                'CALC', 
-                'MTRANS', ]
-#'NObeyesdad']
+categoricals = ['Gender', 'CAEC', 'CALC', 'MTRANS', 'SMOKE', 'SCC',
+                'family_history_with_overweight', 'FAVC', ]
 
-X = dataset.drop('NObeyesdad', axis=1)
-print(dataset['NOBeyesdad'])
-Y = OrdinalEncoder().fit_transform(dataset['NObeyesdad'])
+numericals = ['Age', 'Height', 'Weight', 'FCVC', 
+              'NCP', 'CH2O',  'FAF', 'TUE']
+
+X = dataset.drop(OUTPUT_COLUMN, axis=1)
+Y = pd.DataFrame(data=dataset[OUTPUT_COLUMN], columns=[OUTPUT_COLUMN])
+
+categorical_pipeline = Pipeline([
+    ('Missing Values', SimpleImputer(strategy='most_frequent')),
+    ('encoding', OrdinalEncoder()),
+])
+
+numerical_pipeline = Pipeline([
+    ('Missing Values', SimpleImputer()),
+])
+
+encoding = ColumnTransformer([
+            ('Categorical', categorical_pipeline, categoricals), 
+            ('Numerical', numerical_pipeline, numericals),
+])
 
 train_x, test_x, train_y, test_y = train_test_split(X, Y, test_size=0.2)
-
-print(X.describe())
 
 models = [
         ('Naive Bayes', GaussianNB),
@@ -38,14 +53,12 @@ models = [
         ('k-Nearest Neighbours', KNeighborsClassifier),
 ]
 
-encoding = ColumnTransformer(
-        [('categorical', OrdinalEncoder(), categoricals)],
-        remainder='passthrough',
-)
-
 preprocessing = [
-        [('Encode', encoding)],
-        #[('Encode', OrdinalEncoder()), ('Normalise', StandardScaler()), ('Project', PCA()),],
+        [
+            ('Initial', encoding), 
+            ('Normalise', StandardScaler()), 
+            ('Project', PCA()), 
+        ],
 ]
 
 pipelines = []
@@ -57,12 +70,14 @@ for name, klass in models:
             (name, klass()),
         ]
 
-        pipelines.append(steps)
+        pipelines.append((name, steps))
 
-pipelines = map(lambda steps: Pipeline(steps), pipelines)
+pipelines = map(lambda t: (t[0], Pipeline(t[1])), pipelines)
 
-for pipeline in pipelines:
+for name, pipeline in pipelines:
+    print(name)
     pipeline.fit(train_x, train_y)
+
 
     print(classification_report(test_y, pipeline.predict(test_x)))
 
