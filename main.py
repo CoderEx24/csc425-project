@@ -29,15 +29,16 @@ numericals = ['Age', 'Height', 'Weight', 'FCVC',
 X = dataset.drop(OUTPUT_COLUMN, axis=1)
 Y = pd.DataFrame(data=dataset[OUTPUT_COLUMN], columns=[OUTPUT_COLUMN])
 
-plt.subplots(2, 2)
-plt.subplot(2, 2, 1)
 X.boxplot(['Age'])
-plt.subplot(2, 2, 2)
-X.boxplot(['Height'])
-plt.subplot(2, 2, 3)
-X.boxplot(['Weight'])
+plt.savefig('age-boxplot.png')
+plt.cla()
 
-plt.savefig('data.png')
+X.boxplot(['Height'])
+plt.savefig('height-boxplot.png')
+plt.cla()
+
+X.boxplot(['Weight'])
+plt.savefig('weight-boxplot.png')
 plt.cla()
 
 categorical_pipeline = Pipeline([
@@ -94,15 +95,10 @@ for name, klass in models:
 
 pipelines = map(lambda t: (t[0], t[2], Pipeline(t[1])), pipelines)
 
-SIZE = (4, 4)
-plt.subplots(*SIZE)
-plt.figure(figsize=(20.0, 20.0))
-
 scores = []
 
 for (i, (name, preprocessing_kind, pipeline)) in enumerate(pipelines):
-    ax = plt.subplot(*SIZE, i + 1)
-    ax.set_title(f'{name}\nwith {preprocessing_kind}')
+    plt.title(f'{name}\nwith {preprocessing_kind}')
 
     pipeline.fit(train_x, train_y)
 
@@ -114,12 +110,12 @@ for (i, (name, preprocessing_kind, pipeline)) in enumerate(pipelines):
             test_x,
             test_y,
             normalize='true',
-            ax=ax,
     )
 
     print(name)
 
-plt.savefig('figure.png')
+    plt.savefig(f'{name}-{preprocessing_kind}.png')
+    plt.cla()
 
 L = 15
 
