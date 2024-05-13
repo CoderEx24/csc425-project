@@ -2,13 +2,14 @@ import numpy as np
 import pandas as pd
 import matplotlib
 from matplotlib import pyplot as plt
+import seaborn as sns
 
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import RocCurveDisplay, ConfusionMatrixDisplay
+from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.naive_bayes import GaussianNB
@@ -42,6 +43,10 @@ X.boxplot(['Weight'])
 plt.savefig('weight-boxplot.png')
 plt.cla()
 
+sns.heatmap(dataset[numericals].corr(method='spearman', min_periods=1), annot=True)
+plt.savefig('heatmap.png')
+plt.cla()
+
 categorical_pipeline = Pipeline([
     ('Missing Values', SimpleImputer(strategy='most_frequent')),
     ('encoding', OrdinalEncoder()),
@@ -61,10 +66,10 @@ train_y = train_y.values.ravel()
 test_y =  test_y.values.ravel()
 
 models = [
-    ('Naive Bayes', GaussianNB),
-    ('Decision Tree', DecisionTreeClassifier),
-    ('Multi-Layer Perceptron', MLPClassifier),
-    ('k-Nearest Neighbours', KNeighborsClassifier),
+    ('Naive Bayes', GaussianNB, {}),
+    ('Decision Tree', DecisionTreeClassifier, {}),
+    ('Multi-Layer Perceptron', MLPClassifier, {'max_iter': 10000}),
+    ('k-Nearest Neighbours', KNeighborsClassifier, {}),
 ]
 
 preprocessing = [
@@ -87,11 +92,11 @@ preprocessing_kinds = ['PCA', 'Variance Threshold', 'RFE']
 
 pipelines = []
 
-for name, klass in models:
+for name, klass, kwargs in models:
     for i, pre_steps in enumerate(preprocessing):
         steps = [
             *pre_steps,
-            (name, klass()),
+            (name, klass(**kwargs)),
         ]
 
         pipelines.append((name, steps, preprocessing_kinds[i]))
@@ -115,18 +120,17 @@ for (i, (name, preprocessing_kind, pipeline)) in enumerate(pipelines):
             normalize='true',
     )
 
-    print(name)
-
-    plt.savefig(f'{name}-{preprocessing_kind}.png')
+    plt.savefig(f'{name}-{preprocessing_kind}-cm.png')
     plt.cla()
 
-L = 15
+    plt.title(f'{name}\nwith {preprocessing_kind}')
+    
+L = 30
 
 print('=' * L + '***' + '=' * L)
 
 for n, k, s in scores:
-    
-    s = np.nan_to_num(s)
+    s = s[~np.isnan(s)]
     print(f'{n} - {k}')
     print(f'Scores: {s}\nMean: {s.mean()}, std: {s.std()}')
 
