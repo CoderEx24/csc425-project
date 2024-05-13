@@ -74,32 +74,34 @@ models = [
 
 preprocessing = [
         [
+            'PCA',
             ('Initial', encoding), 
             ('Normalise', StandardScaler()), 
             ('Project', PCA()), 
         ],
         [
+            'Variance Threshold',
             ('Initial', encoding),
             ('filter', VarianceThreshold()),
         ],
         [
+            'RFE',
             ('Initial', encoding),
             ('wrap', RFE(RandomForestClassifier())),
         ],
 ]
 
-preprocessing_kinds = ['PCA', 'Variance Threshold', 'RFE']
-
 pipelines = []
 
 for name, klass, kwargs in models:
-    for i, pre_steps in enumerate(preprocessing):
+    for pre_steps in preprocessing:
+        preprocessing_kind = pre_steps[0]
         steps = [
-            *pre_steps,
+            *pre_steps[1:],
             (name, klass(**kwargs)),
         ]
 
-        pipelines.append((name, steps, preprocessing_kinds[i]))
+        pipelines.append((name, steps, preprocessing_kind))
 
 pipelines = map(lambda t: (t[0], t[2], Pipeline(t[1])), pipelines)
 
