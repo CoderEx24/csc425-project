@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import matplotlib
 from matplotlib import pyplot as plt
@@ -56,6 +57,8 @@ encoding = ColumnTransformer([
 ])
 
 train_x, test_x, train_y, test_y = train_test_split(X, Y, test_size=0.2)
+train_y = train_y.values.ravel()
+test_y =  test_y.values.ravel()
 
 models = [
     ('Naive Bayes', GaussianNB),
@@ -122,6 +125,8 @@ L = 15
 print('=' * L + '***' + '=' * L)
 
 for n, k, s in scores:
+    
+    s = np.nan_to_num(s)
     print(f'{n} - {k}')
     print(f'Scores: {s}\nMean: {s.mean()}, std: {s.std()}')
 
