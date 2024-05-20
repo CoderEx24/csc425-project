@@ -33,20 +33,8 @@ results = pd.DataFrame(columns=['model', 'avg. accuracy', 'accuracy std.', 'roc 
 X = dataset.drop(OUTPUT_COLUMN, axis=1)
 Y = pd.DataFrame(data=dataset[OUTPUT_COLUMN], columns=[OUTPUT_COLUMN])
 
-X.boxplot(['Age'])
-plt.savefig('age-boxplot.png')
-plt.cla()
-
-X.boxplot(['Height'])
-plt.savefig('height-boxplot.png')
-plt.cla()
-
-X.boxplot(['Weight'])
-plt.savefig('weight-boxplot.png')
-plt.cla()
-
-sns.heatmap(dataset[numericals].corr(method='spearman', min_periods=1), annot=True)
-plt.savefig('heatmap.png')
+Y.value_counts().plot.bar()
+plt.savefig("hist.png")
 plt.cla()
 
 categorical_pipeline = Pipeline([
@@ -110,24 +98,24 @@ scores = []
 
 for (i, (name, preprocessing_kind, pipeline)) in enumerate(pipelines):
     print(f'{name} with {preprocessing_kind}')
-    plt.figure(figsize=(19.0, 19.0))
+    plt.figure(figsize=(10.0, 10.0))
     plt.title(f'{name}\nwith {preprocessing_kind}')
-    ax = plt.axes()
 
     pipeline.fit(train_x, train_y.values.ravel())
 
     score = cross_val_score(pipeline, test_x, test_y.values.ravel())
-    roc = roc_
     scores.append((name, preprocessing_kind, score))
 
-    ConfusionMatrixDisplay.from_estimator(
+    fig = ConfusionMatrixDisplay.from_estimator(
             pipeline,
             test_x,
             test_y,
             normalize='true',
             xticks_rotation='vertical',
-            ax=ax,
     )
+
+    fig.figure_.set_figwidth(15)
+    fig.figure_.set_figheight(15)
 
     plt.savefig(f'{name}-{preprocessing_kind}-cm.png')
     plt.cla()
