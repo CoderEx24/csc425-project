@@ -59,6 +59,22 @@ We use data that's been published by Fabio Mendoza Palechor and Alexis De la Hoz
 Filter (SMOTE). 
 */
 = Results and Discussion
+#table(
+  columns: 3,
+  [Pipeline], [Mean Accuracy], [Standard Deviation],
+  [Naive Bayes with PCA], [0.6517507002801121], [0.04107792042513687],
+  [Naive Bayes with Variance Threshold], [0.5603991596638656], [0.029137943560944846],
+  [Naive Bayes with RFE], [0.5960434173669468], [0.04209660664344372],
+  [Decision Tree with PCA], [0.5812324929971989], [0.04008735136514084],
+  [Decision Tree with Variance Threshold], [0.8466036414565826], [0.03328495167706323],
+  [Decision Tree with RFE], [0.819922969187675], [0.04010574265762946],
+  [Multi-Layer Perceptron with PCA], [0.8140406162464986], [0.04086377474357136],
+  [Multi-Layer Perceptron with Variance Threshold], [0.7698529411764706], [0.038029707473487516],
+  [Multi-Layer Perceptron with RFE], [0.6935224089635854], [0.08116535759280616],
+  [k-Nearest Neighbours with PCA], [0.6872899159663866], [0.02590835312810534],
+  [k-Nearest Neighbours with Variance Threshold], [0.7551470588235294], [0.010054995831748011],
+  [k-Nearest Neighbours with RFE], [0.7316176470588235], [0.02347189661692996],
+)
 - Data Set Description: The dataset comprises demographic, dietary, and physical
   activity data.
 - Preprocessing Results: We performed data visualization and handled missing values.
