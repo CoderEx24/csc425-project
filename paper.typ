@@ -29,6 +29,16 @@ Obesity can dramatically impairs one's quality of life, and contributes to other
 We aim to make a machine learning mode that's able to predict obesity levels based on eating habits
 and physical conditions.
 In this project, we compare a number of methods in order to select the most performant one.
+The dataset consists of 17 attributes and 2111 instances. 23% of the dataset are original,
+the rest has been generated using SMOTE filter @dataset.
+
+#figure(
+  image("./hist.png", width: 70%),
+  caption: [Distribution of classes in the dataset]
+)
+
+#pagebreak()
+
 /*
 The main problem addressed in this project is the accurate classification of obesity levels based
 on various factors. We utilized several machine learning techniques, including Naive Bayes,
@@ -37,7 +47,6 @@ is the development of a robust model that outperforms existing benchmarks in acc
 efficiency. The rest of the document is organized into sections detailing related work,
 methodology, proposed model, results, discussion, conclusion, and future work.
 */
-= Related Work
 = Methodology
 We select a number of feature reduction and feature selection techniques.
 For each such technique, we pair them with a classifier model.
@@ -50,7 +59,7 @@ categorical and numerical variables are handled. For numerical variables, missin
 with the mean, while missing values in categorical variables are replaced with the most frequent value.
 In the second stage, Either feature selection or feature reduction is performed.
 For feature reduction, Principle Component Analysis has been chosen.
-For feature selection, Variance Threshold or Recursive Feature Elemenation have been chosen.
+For feature selection, Variance Threshold or Recursive Feature Elimination have been chosen.
 Once a pipeline is constructed, it's trained and evaluated using cross-validation.
 The best model is then selected.
 /*
@@ -75,22 +84,22 @@ Filter (SMOTE).
   [k-Nearest Neighbours with Variance Threshold], [0.7551470588235294], [0.010054995831748011],
   [k-Nearest Neighbours with RFE], [0.7316176470588235], [0.02347189661692996],
 )
-- Data Set Description: The dataset comprises demographic, dietary, and physical
-  activity data.
-- Preprocessing Results: We performed data visualization and handled missing values.
-  Statistical analysis included calculating min, max, mean, variance, standard deviation,
-  skewness, and kurtosis.
-- Feature Reduction Results: We compared LDA, PCA, and SVD, interpreting their
-  effectiveness.
-- Classification Results: We presented the results in tables and figures, comparing the
-  performance of different classifiers.
-- Evaluation Metrics: We applied K-fold cross-validation and confusion matrix analysis to
-  evaluate the models.
+
+#figure(
+  image(
+    "./Decision Tree-RFE-cm.png",
+    width: 70%
+  ),
+  caption: [Confusion Matrix of Decision Tree with Variance Threshold]
+) <dtvth>
+
+The results shows that decision trees with variance threshold is the most performant model
+given the current dataset.
 
 = Conclusion and Future Work
 The project successfully demonstrated the use of machine learning in classifying obesity levels.
 Future work could explore the integration of more diverse datasets and the application of deep
 learning techniques for improved accuracy.
-= References
 
 
+#bibliography("bib.yml")
