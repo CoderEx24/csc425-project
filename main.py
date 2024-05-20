@@ -9,7 +9,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import ConfusionMatrixDisplay, RocCurveDisplay, roc_auc_score
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.naive_bayes import GaussianNB
@@ -27,6 +27,8 @@ categoricals = ['Gender', 'CAEC', 'CALC', 'MTRANS', 'SMOKE',
 
 numericals = ['Age', 'Height', 'Weight', 'FCVC', 
               'NCP', 'CH2O',  'FAF', 'TUE']
+
+results = pd.DataFrame(columns=['model', 'avg. accuracy', 'accuracy std.', 'roc area'])
 
 X = dataset.drop(OUTPUT_COLUMN, axis=1)
 Y = pd.DataFrame(data=dataset[OUTPUT_COLUMN], columns=[OUTPUT_COLUMN])
@@ -62,8 +64,7 @@ encoding = ColumnTransformer([
 ])
 
 train_x, test_x, train_y, test_y = train_test_split(X, Y, test_size=0.2)
-train_y = train_y.values.ravel()
-test_y =  test_y.values.ravel()
+# test_y =  test_y.values.ravel()
 
 models = [
     ('Naive Bayes', GaussianNB, {}),
@@ -108,11 +109,15 @@ pipelines = map(lambda t: (t[0], t[2], Pipeline(t[1])), pipelines)
 scores = []
 
 for (i, (name, preprocessing_kind, pipeline)) in enumerate(pipelines):
+    print(f'{name} with {preprocessing_kind}')
+    plt.figure(figsize=(19.0, 19.0))
     plt.title(f'{name}\nwith {preprocessing_kind}')
+    ax = plt.axes()
 
-    pipeline.fit(train_x, train_y)
+    pipeline.fit(train_x, train_y.values.ravel())
 
-    score = cross_val_score(pipeline, test_x, test_y, n_jobs=1)
+    score = cross_val_score(pipeline, test_x, test_y.values.ravel())
+    roc = roc_
     scores.append((name, preprocessing_kind, score))
 
     ConfusionMatrixDisplay.from_estimator(
@@ -120,22 +125,21 @@ for (i, (name, preprocessing_kind, pipeline)) in enumerate(pipelines):
             test_x,
             test_y,
             normalize='true',
+            xticks_rotation='vertical',
+            ax=ax,
     )
 
     plt.savefig(f'{name}-{preprocessing_kind}-cm.png')
     plt.cla()
 
-    plt.title(f'{name}\nwith {preprocessing_kind}')
-    
 L = 30
 
 print('=' * L + '***' + '=' * L)
 
 for n, k, s in scores:
     s = s[~np.isnan(s)]
-    print(f'{n} - {k}')
-    print(f'Scores: {s}\nMean: {s.mean()}, std: {s.std()}')
+    print(f'[{n} with {k}], [{s.mean()}], [{s.std()}]')
 
-    print('=' * L + '***' + '=' * L)
+    # print('=' * L + '***' + '=' * L)
 
 
