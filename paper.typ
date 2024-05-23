@@ -29,13 +29,30 @@ Obesity can dramatically impairs one's quality of life, and contributes to other
 We aim to make a machine learning mode that's able to predict obesity levels based on eating habits
 and physical conditions.
 In this project, we compare a number of methods in order to select the most performant one.
-The dataset consists of 17 attributes and 2111 instances. 23% of the dataset are original,
-the rest has been generated using SMOTE filter @dataset.
 
-#figure(
-  image("./hist.png", width: 70%),
-  caption: [Distribution of classes in the dataset]
+#grid(
+  rows: 2,
+  columns: 2,
+  grid.cell(
+    colspan: 2,
+    figure(
+      image("./hist.png", width: 45%),
+      caption: [Distribution of classes in the dataset]
+    )
+  ),
+  figure(
+    image("./age-boxplot.png", width: 65%),
+    caption: [Ages]
+  ),
+  figure(
+    image("./height-boxplot.png", width: 65%),
+    caption: [Heights]
+  )
 )
+
+= Related work
+@dataset is the dataset used, it consists of 17 attributes and 2111 instances. 23% of the dataset are original,
+the rest has been generated using SMOTE filter.
 
 #pagebreak()
 
@@ -62,6 +79,12 @@ For feature reduction, Principle Component Analysis has been chosen.
 For feature selection, Variance Threshold or Recursive Feature Elimination have been chosen.
 Once a pipeline is constructed, it's trained and evaluated using cross-validation.
 The best model is then selected.
+
+#figure(
+  image("./pipeline_model.png", width: 35%),
+  caption: [Pipeline],
+)
+
 /*
 We use data that's been published by Fabio Mendoza Palechor and Alexis De la Hoz Manotas.
 23% of the data are original, while the rest has been synthesised using Synthetic Minority Oversampling Technique
@@ -102,4 +125,4 @@ Future work could explore the integration of more diverse datasets and the appli
 learning techniques for improved accuracy.
 
 
-#bibliography("bib.yml")
+#bibliography("bib.yml", style: "apa")
