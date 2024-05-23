@@ -1,0 +1,13 @@
+digraph pipeline_model  {
+    splines=ortho;
+    data [label="Raw data"];
+    pre [label="Preprocessing\nMissing values treatment\nCategorical values encoding", shape="box"];
+    stage1 [label="Feature Selection (Variance Threshold)\n \
+or Feature Reduction (Principle Component Analysis)\n \
+or Wrapper Methods (Recursive Feature Elimination)", shape="box"];
+
+    stage2 [label="Classifier Model\n(ex. MLP, k-NN, Decision Tree, etc", shape="box"];
+
+    data -> pre -> stage1 -> stage2;
+
+}
